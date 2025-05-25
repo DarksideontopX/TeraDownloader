@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔥 Terabox Ultra | Made in India 🇮🇳</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --dark-bg: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --premium-gold: #ffd700;
+            --dark-purple: #1a0033;
+        }
+
+        body {
+            background: var(--dark-bg);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            min-height: 100vh;
+        }
+
+        .neon-text {
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue),
+                         0 0 20px var(--neon-blue),
+                         0 0 30px var(--neon-blue);
+            animation: glow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 5px var(--neon-blue); }
+            to { text-shadow: 0 0 20px var(--neon-blue), 
+                            0 0 30px var(--neon-pink); }
+        }
+
+        .neon-border {
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue),
+                       0 0 20px rgba(0, 243, 255, 0.3);
+        }
+
+        .premium-badge {
+            background: linear-gradient(45deg, var(--premium-gold), #ffaa00);
+            color: black;
+            font-weight: bold;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-blue);
+            object-fit: cover;
+        }
+
+        .tg-btn {
+            background: #0088cc;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .tg-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #0088cc;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #6a00ff, #00ff88);
+            border: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(106, 0, 255, 0.4);
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #00ff00, #00ff88);
+            height: 100%;
+            border-radius: 5px;
+        }
+
+        .plan-card {
+            background: var(--dark-purple);
+            border: 2px solid var(--neon-pink);
+            border-radius: 15px;
+            transition: all 0.3s;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(255, 0, 255, 0.3);
+        }
+
+        .plan-header {
+            background: rgba(106, 0, 255, 0.3);
+            padding: 15px;
+            text-align: center;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--premium-gold), #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .admin-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 0, 0, 0.3);
+            border: 1px solid red;
+        }
+    </style>
+</head>
+<body>
+    <!-- Admin Access Button (Hidden by default) -->
+    <button id="adminAccessBtn" class="btn btn-sm btn-danger admin-btn" onclick="showAdminLogin()" style="display: none;">
+        <i class="fas fa-lock"></i>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand neon-text" href="#">
+                <i class="fas fa-bolt me-2"></i>TERABOX ULTRA
+            </a>
+            <div id="userNav" class="d-flex align-items-center">
+                <!-- User profile will be loaded here -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container my-5">
+        <!-- Download Section -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card bg-dark neon-border p-4 mb-4">
+                    <h3 class="text-center mb-4 neon-text">TERABOX VIDEO DOWNLOADER</h3>
+                    <div class="input-group mb-3">
+                        <input type="text" id="teraboxUrl" class="form-control bg-dark text-white" 
+                               placeholder="Paste Terabox link here...">
+                        <button class="btn btn-primary download-btn" onclick="processLink()">
+                            <i class="fas fa-download me-2"></i>DOWNLOAD
+                        </button>
+                    </div>
+                    <div id="userStatus" class="mt-3">
+                        <!-- User status will be shown here -->
+                    </div>
+                </div>
+
+                <!-- Result Section -->
+                <div id="resultSection" class="card bg-dark neon-border p-4" style="display: none;">
+                    <!-- Results will be shown here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Plans -->
+        <div class="row mt-5" id="premiumSection">
+            <div class="col-md-4 mb-4">
+                <div class="plan-card h-100">
+                    <div class="plan-header">
+                        <h4 class="neon-text">WEEKLY</h4>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="text-center plan-price my-3">₹29</h2>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check text-success me-2"></i> Unlimited Downloads</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Priority Support</li>
+                            <li><i class="fas fa-check text-success me-2"></i> No Ads</li>
+                            <li><i class="fas fa-check text-success me-2"></i> High Speed</li>
+                        </ul>
+                        <button class="btn btn-primary w-100 mt-3" onclick="showUpgradeModal('weekly')">GET PLAN</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="plan-card h-100">
+                    <div class="plan-header">
+                        <h4 class="neon-text">MONTHLY</h4>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="text-center plan-price my-3">₹49</h2>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check text-success me-2"></i> All Weekly Features</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Premium Badge</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Early Access</li>
+                            <li><i class="fas fa-check text-success me-2"></i> VIP Support</li>
+                        </ul>
+                        <button class="btn btn-primary w-100 mt-3" onclick="showUpgradeModal('monthly')">GET PLAN</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="plan-card h-100">
+                    <div class="plan-header">
+                        <h4 class="neon-text">YEARLY</h4>
+                    </div>
+                    <div class="card-body">
+                        <h2 class="text-center plan-price my-3">₹399</h2>
+                        <ul class="feature-list">
+                            <li><i class="fas fa-check text-success me-2"></i> All Monthly Features</li>
+                            <li><i class="fas fa-check text-success me-2"></i> 2 Months FREE</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Exclusive Content</li>
+                            <li><i class="fas fa-check text-success me-2"></i> Custom Requests</li>
+                        </ul>
+                        <button class="btn btn-primary w-100 mt-3" onclick="showUpgradeModal('yearly')">GET PLAN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel (Hidden) -->
+    <div id="adminPanel" class="container mt-5" style="display: none;">
+        <div class="card bg-dark neon-border p-4">
+            <h3 class="text-center neon-text mb-4">👑 ADMIN CONTROL PANEL</h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>User Management</h5>
+                    <div class="mb-3">
+                        <label>Free User Daily Limit</label>
+                        <input type="number" id="dailyLimit" class="form-control bg-dark text-white" value="10">
+                    </div>
+                    <div class="mb-3">
+                        <label>Generate Premium Code</label>
+                        <button class="btn btn-info w-100" onclick="generatePremiumCode()">Generate Code</button>
+                        <div id="generatedCode" class="mt-2 text-center"></div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>API Management</h5>
+                    <div class="mb-3">
+                        <label>Current API Endpoint</label>
+                        <input type="text" id="apiEndpoint" class="form-control bg-dark text-white" 
+                               value="https://terabox-player.rishuapi.workers.dev/">
+                    </div>
+                    <button class="btn btn-success w-100" onclick="updateApiEndpoint()">Update API</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark neon-border">
+                <div class="modal-body">
+                    <h4 class="text-center neon-text mb-4">LOGIN / SIGNUP</h4>
+                    <button class="btn btn-danger w-100 mb-3" onclick="googleLogin()">
+                        <i class="fab fa-google me-2"></i>Continue with Google
+                    </button>
+                    <div class="or-divider text-center my-3">OR</div>
+                    <input type="email" id="loginEmail" class="form-control bg-dark text-white mb-3" placeholder="Email">
+                    <input type="password" id="loginPassword" class="form-control bg-dark text-white mb-3" placeholder="Password">
+                    <button class="btn btn-primary w-100 mb-2" onclick="emailLogin()">Login</button>
+                    <button class="btn btn-outline-primary w-100" onclick="emailSignup()">Create Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Made in India Badge -->
+    <div class="position-fixed bottom-0 end-0 m-3">
+        <img src="https://flagcdn.com/w80/in.png" height="60" alt="Made in India">
+    </div>
+
+    <!-- Telegram Button -->
+    <a href="https://t.me/DarksideXwebs" class="position-fixed bottom-0 start-0 m-3 tg-btn" target="_blank">
+        <i class="fab fa-telegram me-2"></i>Join Telegram
+    </a>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Firebase Configuration (Replace with your config)
+        const firebaseConfig = {
+            apiKey: "AIzaSyYourAPIKey",
+            authDomain: "your-project.firebaseapp.com",
+            projectId: "your-project-id",
+            storageBucket: "your-bucket.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:abcdef123456"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const authModal = new bootstrap.Modal('#authModal');
+
+        // Global Variables
+        let currentUser = null;
+        let userData = {
+            downloads: 0,
+            lastDownload: null,
+            isPremium: false,
+            premiumCode: "",
+            uid: ""
+        };
+        const ADMIN_EMAILS = ["rudrapawarthelegend@gmail.com", "darkxeditsp@gmail.com"];
+        let currentApi = "https://terabox-player.rishuapi.workers.dev/";
+
+        // Initialize App
+        function init() {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    await loadUserData();
+                    updateUI();
+                    
+                    // Show admin button if admin user
+                    if (ADMIN_EMAILS.includes(user.email)) {
+                        document.getElementById('adminAccessBtn').style.display = 'block';
+                    }
+                } else {
+                    showAuthModal();
+                }
+            });
+            
+            // Load saved API
+            if(localStorage.getItem('teraboxApi')) {
+                currentApi = localStorage.getItem('teraboxApi');
+                document.getElementById('apiEndpoint').value = currentApi;
+            }
+        }
+
+        // Auth Functions
+        async function googleLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                await auth.signInWithPopup(provider);
+                authModal.hide();
+            } catch (error) {
+                alert("Login failed: " + error.message);
+            }
+        }
+
+        async function emailLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                authModal.hide();
+            } catch (error) {
+                alert("Login error: " + error.message);
+            }
+        }
+
+        async function emailSignup() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                await auth.createUserWithEmailAndPassword(email, password);
+                await initUserData();
+                authModal.hide();
+            } catch (error) {
+                alert("Signup error: " + error.message);
+            }
+        }
+
+        async function logout() {
+            await auth.signOut();
+            window.location.reload();
+        }
+
+        // User Data Functions
+        async function loadUserData() {
+            if (!currentUser) return;
+            
+            const doc = await db.collection('users').doc(currentUser.uid).get();
+            if (doc.exists) {
+                userData = doc.data();
+                userData.uid = currentUser.uid;
+            } else {
+                await initUserData();
+            }
+        }
+
+        async function initUserData() {
+            userData = {
+                downloads: 0,
+                lastDownload: null,
+                isPremium: false,
+                premiumCode: "",
+                email: currentUser.email,
+                uid: currentUser.uid,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await db.collection('users').doc(currentUser.uid).set(userData);
+        }
+
+        // UI Update Functions
+        function updateUI() {
+            // User Profile
+            const userNav = document.getElementById('userNav');
+            userNav.innerHTML = `
+                <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <img src="${currentUser.photoURL || 'https://i.imgur.com/8Km9tLL.png'}" 
+                             class="user-avatar me-2">
+                        ${currentUser.displayName || currentUser.email.split('@')[0]}
+                        ${userData.isPremium ? '<span class="premium-badge ms-2">PREMIUM</span>' : ''}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li><a class="dropdown-item" href="#" onclick="showDownloadHistory()"><i class="fas fa-history me-2"></i>History</a></li>
+                        ${!userData.isPremium ? '<li><a class="dropdown-item text-warning" href="#" onclick="showPremiumPlans()"><i class="fas fa-crown me-2"></i>Go Premium</a></li>' : ''}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            `;
+
+            // User Status
+            updateUserStatus();
+            
+            // Show premium section if not premium user
+            if (!userData.isPremium) {
+                document.getElementById('premiumSection').style.display = 'flex';
+            } else {
+                document.getElementById('premiumSection').style.display = 'none';
+            }
+        }
+
+        function updateUserStatus() {
+            const today = new Date().toDateString();
+            const lastDownload = userData.lastDownload ? new Date(userData.lastDownload.seconds * 1000).toDateString() : null;
+            const usedDownloads = lastDownload === today ? userData.downloads : 0;
+            const maxDownloads = userData.isPremium ? '∞' : 10;
+            
+            document.getElementById('userStatus').innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Daily Downloads:</span>
+                    <span>${usedDownloads}/${maxDownloads}</span>
+                </div>
+                <div class="progress bg-secondary" style="height: 10px;">
+                    <div class="progress-bar" style="width: ${userData.isPremium ? 100 : (usedDownloads * 10)}%"></div>
+                </div>
+                ${!userData.isPremium ? '<p class="text-warning mt-2 mb-0"><i class="fas fa-crown me-2"></i>Go premium for unlimited downloads!</p>' : ''}
+            `;
+        }
+
+        // Admin Functions
+        function showAdminLogin() {
+            const password = prompt("Enter Admin Password:");
+            if (password === "RUDRAPAWAR") {
+                document.getElementById('adminPanel').style.display = 'block';
+            } else {
+                alert("Invalid admin password!");
+            }
+        }
+
+        async function generatePremiumCode() {
+            if (!ADMIN_EMAILS.includes(currentUser.email)) {
+                alert('Admin access required');
+                return;
+            }
+
+            const code = Math.floor(10000 + Math.random() * 90000).toString();
+            document.getElementById('generatedCode').innerHTML = `
+                <div class="alert alert-success">
+                    <strong>Premium Code:</strong> ${code}
+                </div>
+                <button class="btn btn-sm btn-outline-light w-100" onclick="copyToClipboard('${code}')">
+                    Copy Code
+                </button>
+            `;
+        }
+
+        function updateApiEndpoint() {
+            const newApi = document.getElementById('apiEndpoint').value;
+            if (!newApi.includes('http')) {
+                alert('Invalid API URL');
+                return;
+            }
+            
+            currentApi = newApi;
+            localStorage.setItem('teraboxApi', newApi);
+            alert('API endpoint updated!');
+        }
+
+        // Download Functions
+        async function processLink() {
+            if (!currentUser) {
+                showAuthModal();
+                return;
+            }
+
+            const url = document.getElementById('teraboxUrl').value.trim();
+            if (!url.includes('terabox')) {
+                alert('Please enter a valid Terabox URL');
+                return;
+            }
+
+            // Check download limit
+            if (!userData.isPremium) {
+                const today = new Date().toDateString();
+                const lastDownload = userData.lastDownload ? new Date(userData.lastDownload.seconds * 1000).toDateString() : null;
+                
+                if (lastDownload === today && userData.downloads >= 10) {
+                    alert('Daily download limit reached! Upgrade to premium');
+                    showPremiumPlans();
+                    return;
+                }
+            }
+
+            // Process download
+            try {
+                const response = await fetch(`${currentApi}?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Update download count
+                const today = new Date().toDateString();
+                const lastDownload = userData.lastDownload ? new Date(userData.lastDownload.seconds * 1000).toDateString() : null;
+                const newCount = lastDownload === today ? userData.downloads + 1 : 1;
+                
+                await db.collection('users').doc(currentUser.uid).update({
+                    downloads: newCount,
+                    lastDownload: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                userData.downloads = newCount;
+                userData.lastDownload = { seconds: Math.floor(Date.now() / 1000) };
+                updateUserStatus();
+                
+                // Show results
+                showResults(data);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        function showResults(data) {
+            const resultSection = document.getElementById('resultSection');
+            resultSection.style.display = 'block';
+            resultSection.innerHTML = `
+                <h4 class="neon-text mb-3">${data.title || 'Terabox File'}</h4>
+                <p class="mb-3">Size: ${data.size || 'N/A'}</p>
+                
+                <div class="ratio ratio-16x9 mb-4">
+                    <video controls class="bg-black">
+                        <source src="${data.video_url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <a href="${data.download_url}" class="btn download-btn" download>
+                        <i class="fas fa-download me-2"></i>Download Now
+                    </a>
+                </div>
+            `;
+            
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Helper Functions
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text);
+            alert('Copied to clipboard!');
+        }
+
+        function showAuthModal() {
+            authModal.show();
+        }
+
+        function showPremiumPlans() {
+            document.getElementById('premiumSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showUpgradeModal(plan) {
+            const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+            const price = plan === 'weekly' ? 29 : plan === 'monthly' ? 49 : 399;
+            
+            alert(`Redirecting to payment for ${planName} plan (₹${price})...`);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
