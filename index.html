@@ -8,10 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --neon-blue: #00f3ff;
@@ -19,13 +15,12 @@
             --dark-bg: #0a0a0a;
             --card-bg: #1a1a1a;
             --premium-gold: #ffd700;
-            --dark-purple: #1a0033;
         }
 
         body {
             background: var(--dark-bg);
             color: white;
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Arial', sans-serif;
             min-height: 100vh;
         }
 
@@ -34,36 +29,12 @@
             text-shadow: 0 0 10px var(--neon-blue),
                          0 0 20px var(--neon-blue),
                          0 0 30px var(--neon-blue);
-            animation: glow 1.5s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 5px var(--neon-blue); }
-            to { text-shadow: 0 0 20px var(--neon-blue), 
-                            0 0 30px var(--neon-pink); }
         }
 
         .neon-border {
             border: 2px solid var(--neon-blue);
             box-shadow: 0 0 10px var(--neon-blue),
                        0 0 20px rgba(0, 243, 255, 0.3);
-        }
-
-        .premium-badge {
-            background: linear-gradient(45deg, var(--premium-gold), #ffaa00);
-            color: black;
-            font-weight: bold;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 0.8rem;
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 2px solid var(--neon-blue);
-            object-fit: cover;
         }
 
         .tg-btn {
@@ -99,77 +70,50 @@
             border-radius: 5px;
         }
 
-        .plan-card {
-            background: var(--dark-purple);
-            border: 2px solid var(--neon-pink);
-            border-radius: 15px;
-            transition: all 0.3s;
-            overflow: hidden;
+        .admin-panel {
+            background: rgba(0,0,0,0.9);
+            border: 3px solid var(--neon-pink);
+            border-radius: 20px;
+            padding: 2rem;
         }
 
-        .plan-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(255, 0, 255, 0.3);
-        }
-
-        .plan-header {
-            background: rgba(106, 0, 255, 0.3);
-            padding: 15px;
-            text-align: center;
-        }
-
-        .plan-price {
-            font-size: 2.5rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, var(--premium-gold), #ffaa00);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .feature-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .feature-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .feature-list li:last-child {
-            border-bottom: none;
-        }
-
-        .admin-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: rgba(255, 0, 0, 0.3);
-            border: 1px solid red;
+        .username-input {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--neon-blue);
+            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- Admin Access Button (Hidden by default) -->
-    <button id="adminAccessBtn" class="btn btn-sm btn-danger admin-btn" onclick="showAdminLogin()" style="display: none;">
-        <i class="fas fa-lock"></i>
-    </button>
-
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand neon-text" href="#">
                 <i class="fas fa-bolt me-2"></i>TERABOX ULTRA
             </a>
-            <div id="userNav" class="d-flex align-items-center">
-                <!-- User profile will be loaded here -->
-            </div>
+            <button class="btn btn-outline-info" onclick="showAdminPanel()">
+                <i class="fas fa-user-shield"></i> Admin
+            </button>
         </div>
     </nav>
 
     <!-- Main Container -->
     <div class="container my-5">
+        <!-- Username Section -->
+        <div class="row justify-content-center mb-4">
+            <div class="col-lg-8">
+                <div class="card bg-dark neon-border p-3">
+                    <div class="input-group">
+                        <input type="text" id="username" class="form-control username-input" 
+                               placeholder="Choose your username...">
+                        <button class="btn btn-primary" onclick="saveUsername()">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Download Section -->
         <div class="row justify-content-center">
             <div class="col-lg-8">
@@ -183,7 +127,13 @@
                         </button>
                     </div>
                     <div id="userStatus" class="mt-3">
-                        <!-- User status will be shown here -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span>Daily Downloads:</span>
+                            <span id="downloadCount">0/10</span>
+                        </div>
+                        <div class="progress bg-secondary" style="height: 10px;">
+                            <div id="downloadProgress" class="progress-bar" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -194,110 +144,78 @@
             </div>
         </div>
 
-        <!-- Premium Plans -->
-        <div class="row mt-5" id="premiumSection">
-            <div class="col-md-4 mb-4">
-                <div class="plan-card h-100">
-                    <div class="plan-header">
-                        <h4 class="neon-text">WEEKLY</h4>
-                    </div>
-                    <div class="card-body">
-                        <h2 class="text-center plan-price my-3">₹29</h2>
-                        <ul class="feature-list">
-                            <li><i class="fas fa-check text-success me-2"></i> Unlimited Downloads</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Priority Support</li>
-                            <li><i class="fas fa-check text-success me-2"></i> No Ads</li>
-                            <li><i class="fas fa-check text-success me-2"></i> High Speed</li>
-                        </ul>
-                        <button class="btn btn-primary w-100 mt-3" onclick="showUpgradeModal('weekly')">GET PLAN</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4 mb-4">
-                <div class="plan-card h-100">
-                    <div class="plan-header">
-                        <h4 class="neon-text">MONTHLY</h4>
-                    </div>
-                    <div class="card-body">
-                        <h2 class="text-center plan-price my-3">₹49</h2>
-                        <ul class="feature-list">
-                            <li><i class="fas fa-check text-success me-2"></i> All Weekly Features</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Premium Badge</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Early Access</li>
-                            <li><i class="fas fa-check text-success me-2"></i> VIP Support</li>
-                        </ul>
-                        <button class="btn btn-primary w-100 mt-3" onclick="showUpgradeModal('monthly')">GET PLAN</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4 mb-4">
-                <div class="plan-card h-100">
-                    <div class="plan-header">
-                        <h4 class="neon-text">YEARLY</h4>
-                    </div>
-                    <div class="card-body">
-                        <h2 class="text-center plan-price my-3">₹399</h2>
-                        <ul class="feature-list">
-                            <li><i class="fas fa-check text-success me-2"></i> All Monthly Features</li>
-                            <li><i class="fas fa-check text-success me-2"></i> 2 Months FREE</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Exclusive Content</li>
-                            <li><i class="fas fa-check text-success me-2"></i> Custom Requests</li>
-                        </ul>
-                        <button class="btn btn-primary w-100 mt-3" onclick="showUpgradeModal('yearly')">GET PLAN</button>
-                    </div>
-                </div>
+        <!-- Subscription Button -->
+        <div class="row mt-4 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <a href="https://t.me/DarksideXwebs" class="tg-btn" target="_blank">
+                    <i class="fas fa-crown me-2"></i>BUY PREMIUM SUBSCRIPTION
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Admin Panel (Hidden) -->
-    <div id="adminPanel" class="container mt-5" style="display: none;">
-        <div class="card bg-dark neon-border p-4">
-            <h3 class="text-center neon-text mb-4">👑 ADMIN CONTROL PANEL</h3>
+    <!-- Admin Panel -->
+    <div id="adminPanel" class="container mt-5 admin-panel" style="display: none;">
+        <h3 class="text-center neon-text mb-4">👑 ADMIN CONTROL PANEL</h3>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h5>User Management</h5>
+                <div class="mb-3">
+                    <label>Username</label>
+                    <input type="text" id="adminUsername" class="form-control bg-dark text-white">
+                </div>
+                <div class="mb-3">
+                    <label>Daily Limit</label>
+                    <input type="number" id="dailyLimit" class="form-control bg-dark text-white" value="10">
+                </div>
+                <div class="mb-3">
+                    <label>Premium Status</label>
+                    <select id="premiumStatus" class="form-control bg-dark text-white">
+                        <option value="false">Regular User</option>
+                        <option value="true">Premium User</option>
+                    </select>
+                </div>
+                <button class="btn btn-success w-100" onclick="updateUser()">Update User</button>
+            </div>
             
+            <div class="col-md-6">
+                <h5>API Management</h5>
+                <div class="mb-3">
+                    <label>API Endpoints (comma separated)</label>
+                    <textarea id="apiEndpoints" class="form-control bg-dark text-white" rows="3">https://terabox-player.rishuapi.workers.dev/,https://terabox-dl.example.com/</textarea>
+                </div>
+                <button class="btn btn-info w-100 mb-2" onclick="testApis()">Test APIs</button>
+                <div id="apiTestResults" class="text-center"></div>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <h5>Statistics</h5>
             <div class="row">
-                <div class="col-md-6">
-                    <h5>User Management</h5>
-                    <div class="mb-3">
-                        <label>Free User Daily Limit</label>
-                        <input type="number" id="dailyLimit" class="form-control bg-dark text-white" value="10">
-                    </div>
-                    <div class="mb-3">
-                        <label>Generate Premium Code</label>
-                        <button class="btn btn-info w-100" onclick="generatePremiumCode()">Generate Code</button>
-                        <div id="generatedCode" class="mt-2 text-center"></div>
+                <div class="col-md-4">
+                    <div class="card bg-dark mb-3">
+                        <div class="card-body">
+                            <h6>Total Downloads</h6>
+                            <h3 id="totalDownloads">0</h3>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="col-md-6">
-                    <h5>API Management</h5>
-                    <div class="mb-3">
-                        <label>Current API Endpoint</label>
-                        <input type="text" id="apiEndpoint" class="form-control bg-dark text-white" 
-                               value="https://terabox-player.rishuapi.workers.dev/">
+                <div class="col-md-4">
+                    <div class="card bg-dark mb-3">
+                        <div class="card-body">
+                            <h6>API Requests</h6>
+                            <h3 id="totalRequests">0</h3>
+                        </div>
                     </div>
-                    <button class="btn btn-success w-100" onclick="updateApiEndpoint()">Update API</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Auth Modal -->
-    <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content bg-dark neon-border">
-                <div class="modal-body">
-                    <h4 class="text-center neon-text mb-4">LOGIN / SIGNUP</h4>
-                    <button class="btn btn-danger w-100 mb-3" onclick="googleLogin()">
-                        <i class="fab fa-google me-2"></i>Continue with Google
-                    </button>
-                    <div class="or-divider text-center my-3">OR</div>
-                    <input type="email" id="loginEmail" class="form-control bg-dark text-white mb-3" placeholder="Email">
-                    <input type="password" id="loginPassword" class="form-control bg-dark text-white mb-3" placeholder="Password">
-                    <button class="btn btn-primary w-100 mb-2" onclick="emailLogin()">Login</button>
-                    <button class="btn btn-outline-primary w-100" onclick="emailSignup()">Create Account</button>
+                <div class="col-md-4">
+                    <div class="card bg-dark mb-3">
+                        <div class="card-body">
+                            <h6>Active Users</h6>
+                            <h3 id="activeUsers">0</h3>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -308,275 +226,208 @@
         <img src="https://flagcdn.com/w80/in.png" height="60" alt="Made in India">
     </div>
 
-    <!-- Telegram Button -->
-    <a href="https://t.me/DarksideXwebs" class="position-fixed bottom-0 start-0 m-3 tg-btn" target="_blank">
-        <i class="fab fa-telegram me-2"></i>Join Telegram
-    </a>
+    <!-- Footer -->
+    <footer class="text-center py-3">
+        <p class="mb-1">MADE BY RUDRA PAWAR</p>
+        <p class="mb-0">ADMIN PANEL KEY: RUDRAPAWAR</p>
+    </footer>
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Firebase Configuration (Replace with your config)
-        const firebaseConfig = {
-            apiKey: "AIzaSyYourAPIKey",
-            authDomain: "your-project.firebaseapp.com",
-            projectId: "your-project-id",
-            storageBucket: "your-bucket.appspot.com",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:abcdef123456"
-        };
-
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const authModal = new bootstrap.Modal('#authModal');
-
         // Global Variables
-        let currentUser = null;
-        let userData = {
+        const ADMIN_KEY = "RUDRAPAWAR";
+        let currentApiIndex = 0;
+        let apis = ["https://terabox-player.rishuapi.workers.dev/"];
+        let stats = {
             downloads: 0,
-            lastDownload: null,
-            isPremium: false,
-            premiumCode: "",
-            uid: ""
+            requests: 0,
+            users: 0
         };
-        const ADMIN_EMAILS = ["rudrapawarthelegend@gmail.com", "darkxeditsp@gmail.com"];
-        let currentApi = "https://terabox-player.rishuapi.workers.dev/";
+        let users = {};
+        let currentUsername = "";
 
         // Initialize App
         function init() {
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    currentUser = user;
-                    await loadUserData();
-                    updateUI();
-                    
-                    // Show admin button if admin user
-                    if (ADMIN_EMAILS.includes(user.email)) {
-                        document.getElementById('adminAccessBtn').style.display = 'block';
-                    }
-                } else {
-                    showAuthModal();
+            loadStats();
+            loadUsers();
+            loadCurrentUser();
+            
+            // Load multiple APIs if available
+            const savedApis = localStorage.getItem('teraboxApis');
+            if(savedApis) {
+                apis = JSON.parse(savedApis);
+                document.getElementById('apiEndpoints').value = apis.join(",");
+            }
+        }
+
+        // User Functions
+        function saveUsername() {
+            const username = document.getElementById('username').value.trim();
+            if(username) {
+                currentUsername = username;
+                localStorage.setItem('teraboxUsername', username);
+                
+                if(!users[username]) {
+                    users[username] = {
+                        downloads: 0,
+                        limit: 10,
+                        isPremium: false,
+                        lastDownload: null
+                    };
+                    stats.users++;
+                    saveUsers();
+                    saveStats();
                 }
-            });
-            
-            // Load saved API
-            if(localStorage.getItem('teraboxApi')) {
-                currentApi = localStorage.getItem('teraboxApi');
-                document.getElementById('apiEndpoint').value = currentApi;
-            }
-        }
-
-        // Auth Functions
-        async function googleLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                await auth.signInWithPopup(provider);
-                authModal.hide();
-            } catch (error) {
-                alert("Login failed: " + error.message);
-            }
-        }
-
-        async function emailLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-                authModal.hide();
-            } catch (error) {
-                alert("Login error: " + error.message);
-            }
-        }
-
-        async function emailSignup() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            try {
-                await auth.createUserWithEmailAndPassword(email, password);
-                await initUserData();
-                authModal.hide();
-            } catch (error) {
-                alert("Signup error: " + error.message);
-            }
-        }
-
-        async function logout() {
-            await auth.signOut();
-            window.location.reload();
-        }
-
-        // User Data Functions
-        async function loadUserData() {
-            if (!currentUser) return;
-            
-            const doc = await db.collection('users').doc(currentUser.uid).get();
-            if (doc.exists) {
-                userData = doc.data();
-                userData.uid = currentUser.uid;
+                
+                alert("Username saved successfully!");
+                updateUserDisplay();
             } else {
-                await initUserData();
+                alert("Please enter a valid username");
             }
         }
 
-        async function initUserData() {
-            userData = {
-                downloads: 0,
-                lastDownload: null,
-                isPremium: false,
-                premiumCode: "",
-                email: currentUser.email,
-                uid: currentUser.uid,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            };
-            await db.collection('users').doc(currentUser.uid).set(userData);
-        }
-
-        // UI Update Functions
-        function updateUI() {
-            // User Profile
-            const userNav = document.getElementById('userNav');
-            userNav.innerHTML = `
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                        <img src="${currentUser.photoURL || 'https://i.imgur.com/8Km9tLL.png'}" 
-                             class="user-avatar me-2">
-                        ${currentUser.displayName || currentUser.email.split('@')[0]}
-                        ${userData.isPremium ? '<span class="premium-badge ms-2">PREMIUM</span>' : ''}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark">
-                        <li><a class="dropdown-item" href="#" onclick="showDownloadHistory()"><i class="fas fa-history me-2"></i>History</a></li>
-                        ${!userData.isPremium ? '<li><a class="dropdown-item text-warning" href="#" onclick="showPremiumPlans()"><i class="fas fa-crown me-2"></i>Go Premium</a></li>' : ''}
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
-                    </ul>
-                </div>
-            `;
-
-            // User Status
-            updateUserStatus();
-            
-            // Show premium section if not premium user
-            if (!userData.isPremium) {
-                document.getElementById('premiumSection').style.display = 'flex';
-            } else {
-                document.getElementById('premiumSection').style.display = 'none';
+        function loadCurrentUser() {
+            const savedUsername = localStorage.getItem('teraboxUsername');
+            if(savedUsername) {
+                currentUsername = savedUsername;
+                document.getElementById('username').value = savedUsername;
+                updateUserDisplay();
             }
         }
 
-        function updateUserStatus() {
-            const today = new Date().toDateString();
-            const lastDownload = userData.lastDownload ? new Date(userData.lastDownload.seconds * 1000).toDateString() : null;
-            const usedDownloads = lastDownload === today ? userData.downloads : 0;
-            const maxDownloads = userData.isPremium ? '∞' : 10;
-            
-            document.getElementById('userStatus').innerHTML = `
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Daily Downloads:</span>
-                    <span>${usedDownloads}/${maxDownloads}</span>
-                </div>
-                <div class="progress bg-secondary" style="height: 10px;">
-                    <div class="progress-bar" style="width: ${userData.isPremium ? 100 : (usedDownloads * 10)}%"></div>
-                </div>
-                ${!userData.isPremium ? '<p class="text-warning mt-2 mb-0"><i class="fas fa-crown me-2"></i>Go premium for unlimited downloads!</p>' : ''}
-            `;
+        function updateUserDisplay() {
+            if(currentUsername && users[currentUsername]) {
+                const user = users[currentUsername];
+                const today = new Date().toDateString();
+                const lastDownload = user.lastDownload ? new Date(user.lastDownload).toDateString() : null;
+                const usedDownloads = lastDownload === today ? user.downloads : 0;
+                
+                document.getElementById('downloadCount').textContent = 
+                    `${usedDownloads}/${user.limit}${user.isPremium ? ' (Premium)' : ''}`;
+                document.getElementById('downloadProgress').style.width = 
+                    `${Math.min(100, (usedDownloads / user.limit) * 100)}%`;
+            }
         }
 
         // Admin Functions
-        function showAdminLogin() {
-            const password = prompt("Enter Admin Password:");
-            if (password === "RUDRAPAWAR") {
+        function showAdminPanel() {
+            const key = prompt("Enter Admin Key:");
+            if(key === ADMIN_KEY) {
                 document.getElementById('adminPanel').style.display = 'block';
+                updateAdminDisplay();
             } else {
-                alert("Invalid admin password!");
+                alert("Invalid admin key!");
             }
         }
 
-        async function generatePremiumCode() {
-            if (!ADMIN_EMAILS.includes(currentUser.email)) {
-                alert('Admin access required');
-                return;
-            }
-
-            const code = Math.floor(10000 + Math.random() * 90000).toString();
-            document.getElementById('generatedCode').innerHTML = `
-                <div class="alert alert-success">
-                    <strong>Premium Code:</strong> ${code}
-                </div>
-                <button class="btn btn-sm btn-outline-light w-100" onclick="copyToClipboard('${code}')">
-                    Copy Code
-                </button>
-            `;
-        }
-
-        function updateApiEndpoint() {
-            const newApi = document.getElementById('apiEndpoint').value;
-            if (!newApi.includes('http')) {
-                alert('Invalid API URL');
-                return;
-            }
+        function updateUser() {
+            const username = document.getElementById('adminUsername').value;
+            const limit = parseInt(document.getElementById('dailyLimit').value);
+            const isPremium = document.getElementById('premiumStatus').value === 'true';
             
-            currentApi = newApi;
-            localStorage.setItem('teraboxApi', newApi);
-            alert('API endpoint updated!');
+            if(username && users[username]) {
+                users[username].limit = limit;
+                users[username].isPremium = isPremium;
+                saveUsers();
+                alert("User updated successfully!");
+                
+                if(username === currentUsername) {
+                    updateUserDisplay();
+                }
+            } else {
+                alert("User not found!");
+            }
+        }
+
+        function testApis() {
+            const apiList = document.getElementById('apiEndpoints').value.split(',').map(api => api.trim());
+            const resultsDiv = document.getElementById('apiTestResults');
+            resultsDiv.innerHTML = "<p>Testing APIs... Please wait</p>";
+            
+            // Simple test - we'll just check if the URL looks valid
+            setTimeout(() => {
+                let resultHTML = "";
+                apiList.forEach(api => {
+                    const isValid = api.startsWith('http') && api.includes('terabox');
+                    resultHTML += `<p class="${isValid ? 'text-success' : 'text-danger'}">
+                        ${api} - ${isValid ? '✅ Working' : '❌ Not Valid'}
+                    </p>`;
+                });
+                
+                resultsDiv.innerHTML = resultHTML;
+                if(apiList.length > 0) {
+                    apis = apiList.filter(api => api.startsWith('http') && api.includes('terabox'));
+                    localStorage.setItem('teraboxApis', JSON.stringify(apis));
+                }
+            }, 1000);
         }
 
         // Download Functions
-        async function processLink() {
-            if (!currentUser) {
-                showAuthModal();
+        function processLink() {
+            if(!currentUsername) {
+                alert("Please set a username first!");
                 return;
             }
-
-            const url = document.getElementById('teraboxUrl').value.trim();
-            if (!url.includes('terabox')) {
-                alert('Please enter a valid Terabox URL');
-                return;
-            }
-
+            
+            const user = users[currentUsername];
+            const today = new Date().toDateString();
+            const lastDownload = user.lastDownload ? new Date(user.lastDownload).toDateString() : null;
+            
             // Check download limit
-            if (!userData.isPremium) {
-                const today = new Date().toDateString();
-                const lastDownload = userData.lastDownload ? new Date(userData.lastDownload.seconds * 1000).toDateString() : null;
-                
-                if (lastDownload === today && userData.downloads >= 10) {
-                    alert('Daily download limit reached! Upgrade to premium');
-                    showPremiumPlans();
-                    return;
-                }
+            if(!user.isPremium && lastDownload === today && user.downloads >= user.limit) {
+                alert(`Daily download limit reached! ${user.limit} downloads per day for free users.`);
+                return;
             }
+            
+            const url = document.getElementById('teraboxUrl').value.trim();
+            if(!url.includes('terabox')) {
+                alert("Please enter a valid Terabox URL");
+                return;
+            }
+            
+            // Update download count
+            if(lastDownload === today) {
+                user.downloads++;
+            } else {
+                user.downloads = 1;
+            }
+            user.lastDownload = new Date().toISOString();
+            
+            stats.downloads++;
+            stats.requests++;
+            
+            saveUsers();
+            saveStats();
+            updateUserDisplay();
+            updateAdminDisplay();
+            
+            // Process download with current API
+            processDownload(url);
+        }
 
-            // Process download
-            try {
-                const response = await fetch(`${currentApi}?url=${encodeURIComponent(url)}`);
-                const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Update download count
-                const today = new Date().toDateString();
-                const lastDownload = userData.lastDownload ? new Date(userData.lastDownload.seconds * 1000).toDateString() : null;
-                const newCount = lastDownload === today ? userData.downloads + 1 : 1;
-                
-                await db.collection('users').doc(currentUser.uid).update({
-                    downloads: newCount,
-                    lastDownload: firebase.firestore.FieldValue.serverTimestamp()
+        function processDownload(url) {
+            const api = apis[currentApiIndex];
+            const apiUrl = `${api}?url=${encodeURIComponent(url)}`;
+            
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if(data.error) {
+                        throw new Error(data.error);
+                    }
+                    showResults(data);
+                })
+                .catch(error => {
+                    console.error(`API ${api} failed:`, error);
+                    // Try next API
+                    currentApiIndex = (currentApiIndex + 1) % apis.length;
+                    if(currentApiIndex === 0) {
+                        alert("All APIs failed. Please try again later.");
+                    } else {
+                        processDownload(url);
+                    }
                 });
-                
-                userData.downloads = newCount;
-                userData.lastDownload = { seconds: Math.floor(Date.now() / 1000) };
-                updateUserStatus();
-                
-                // Show results
-                showResults(data);
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
         }
 
         function showResults(data) {
@@ -603,25 +454,34 @@
             resultSection.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Helper Functions
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text);
-            alert('Copied to clipboard!');
+        // Data Management
+        function loadStats() {
+            const savedStats = localStorage.getItem('teraboxStats');
+            if(savedStats) {
+                stats = JSON.parse(savedStats);
+                updateAdminDisplay();
+            }
         }
 
-        function showAuthModal() {
-            authModal.show();
+        function saveStats() {
+            localStorage.setItem('teraboxStats', JSON.stringify(stats));
         }
 
-        function showPremiumPlans() {
-            document.getElementById('premiumSection').scrollIntoView({ behavior: 'smooth' });
+        function loadUsers() {
+            const savedUsers = localStorage.getItem('teraboxUsers');
+            if(savedUsers) {
+                users = JSON.parse(savedUsers);
+            }
         }
 
-        function showUpgradeModal(plan) {
-            const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
-            const price = plan === 'weekly' ? 29 : plan === 'monthly' ? 49 : 399;
-            
-            alert(`Redirecting to payment for ${planName} plan (₹${price})...`);
+        function saveUsers() {
+            localStorage.setItem('teraboxUsers', JSON.stringify(users));
+        }
+
+        function updateAdminDisplay() {
+            document.getElementById('totalDownloads').textContent = stats.downloads;
+            document.getElementById('totalRequests').textContent = stats.requests;
+            document.getElementById('activeUsers').textContent = stats.users;
         }
 
         // Initialize when page loads
